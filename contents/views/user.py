@@ -12,6 +12,10 @@ class CreatUser(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 class LoginUserView(APIView):
 
     def post(self, request):
@@ -61,9 +65,13 @@ class DeleteUser(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def destroy(self, request, pk):
-        if pk == request.user.id:
-            self.perform_destroy(request.user)
+        try:
+            user = User.objects.get(id=pk)
+            if pk == request.user.id:
+                self.perform_destroy(request.user)
 
-            return Response({'success': True, 'message': 'user deleted successfully!'})
-        else:
-            return Response({'success': False, 'message': 'invalid authentication!'})
+                return Response({'success': True, 'message': 'user deleted successfully!'})
+            else:
+                return Response({'success': False, 'message': 'invalid authentication!'})
+        except ObjectDoesNotExist:
+            return Response({'success': False, 'message': 'user does not exist!'})
